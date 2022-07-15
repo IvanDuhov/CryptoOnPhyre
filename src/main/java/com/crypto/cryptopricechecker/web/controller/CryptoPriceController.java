@@ -19,7 +19,6 @@ public class CryptoPriceController {
 
     @GetMapping(value = "/{ticker}")
     public ResponseEntity<String> get(@PathVariable String ticker) {
-
         var price = priceCheckerService.getPrice(ticker);
 
         return new ResponseEntity<>(ticker + ": " + price, HttpStatus.OK);
