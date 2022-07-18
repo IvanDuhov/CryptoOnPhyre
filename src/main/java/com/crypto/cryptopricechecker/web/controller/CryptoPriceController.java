@@ -1,6 +1,8 @@
 package com.crypto.cryptopricechecker.web.controller;
 
 import com.crypto.cryptopricechecker.service.PriceCheckerService;
+import com.crypto.cryptopricechecker.utils.CoinMarketCapClient;
+import java.net.HttpRetryException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,8 +22,12 @@ public class CryptoPriceController {
     private PriceCheckerService priceCheckerService;
 
     @GetMapping(value = "/{ticker}")
-    public ResponseEntity<String> get(@PathVariable String ticker) {
+    public ResponseEntity<String> get(@PathVariable String ticker) throws HttpRetryException {
+        ticker = ticker.toUpperCase();
         log.info("Requested data for ticker: " + ticker);
+
+        CoinMarketCapClient coinMarketCapClient = new CoinMarketCapClient();
+        coinMarketCapClient.getPrice(ticker);
 
         var price = priceCheckerService.getPrice(ticker);
 
