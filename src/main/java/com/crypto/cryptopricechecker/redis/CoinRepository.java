@@ -1,4 +1,4 @@
-package com.crypto.cryptopricechecker.redis.repository;
+package com.crypto.cryptopricechecker.redis;
 
 import com.crypto.cryptopricechecker.web.model.Coin;
 import org.springframework.data.repository.CrudRepository;
