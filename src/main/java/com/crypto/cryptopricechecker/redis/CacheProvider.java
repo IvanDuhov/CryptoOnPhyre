@@ -1,6 +1,5 @@
 package com.crypto.cryptopricechecker.redis;
 
-import com.crypto.cryptopricechecker.redis.repository.CoinRepository;
 import com.crypto.cryptopricechecker.web.model.Coin;
 import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
