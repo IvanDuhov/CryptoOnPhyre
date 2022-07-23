@@ -28,7 +28,7 @@ public class ErrorHandler {
      * Handles HTTPRetryException.
      *
      * @param e object from HTTPRetryException class
-     * @return returns HTTP 400 and the message of the exception
+     * @return returns HTTP 429 and the message of the exception
      */
     @ExceptionHandler(HttpRetryException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(HttpRetryException e) {
