@@ -5,10 +5,10 @@ plugins {
 }
 
 group = 'com.crypto'
-version = '1.0.0'
 sourceCompatibility = '11'
 
 def springVersion = '2.7.1'
+def projectName = 'cryptoapi'
 
 configurations {
     compileOnly {
@@ -30,4 +30,16 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+bootJar {
+    archiveFileName = "${projectName}.jar"
+    manifest {
+        attributes 'Implementation-Title': projectName,
+                'Implementation-Version': archiveVersion,
+                'Built-By': System.getProperty('user.name'),
+                'Built-Date': new Date(),
+                'Built-JDK': System.getProperty('java.version'),
+                'Built-Gradle': gradle.gradleVersion
+    }
 }
