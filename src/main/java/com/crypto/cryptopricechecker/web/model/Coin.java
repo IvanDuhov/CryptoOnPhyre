@@ -1,5 +1,6 @@
 package com.crypto.cryptopricechecker.web.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,4 +16,6 @@ public class Coin implements Serializable {
     @Id
     private String ticker;
     private Double price;
+    @JsonIgnore
+    private long lastUpdated;
 }

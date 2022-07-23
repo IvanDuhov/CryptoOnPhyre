@@ -26,7 +26,7 @@ public class CryptoPriceController {
         ticker = ticker.toUpperCase();
         log.info("Requested data for ticker: " + ticker);
 
-        return new ResponseEntity<>(priceCheckerService.getData(ticker), HttpStatus.OK);
+        return new ResponseEntity<>(priceCheckerService.getPrice(ticker), HttpStatus.OK);
     }
 
 }

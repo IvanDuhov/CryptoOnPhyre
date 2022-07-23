@@ -1,8 +1,19 @@
-package com.crypto.cryptopricechecker.utils;
+package com.crypto.cryptopricechecker.integration;
 
+import com.crypto.cryptopricechecker.redis.CacheProvider;
 import com.crypto.cryptopricechecker.web.model.Coin;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.net.HttpRetryException;
+import java.net.URISyntaxException;
+import java.nio.channels.IllegalSelectorException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
@@ -13,18 +24,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.net.HttpRetryException;
-import java.net.URISyntaxException;
-import java.nio.channels.IllegalSelectorException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -32,18 +34,48 @@ public class CoinMarketCapClient implements CryptoPriceProvider {
 
     @Value("${cmc.apikey:test}")
     private String apiKey;
+    @Value("${cache.expiration:15}000")
+    private Integer expirationTimeS;
+
+    @Autowired
+    private CacheProvider cacheProvider;
 
     @Override
-    public Double getPrice(String ticker) throws HttpRetryException {
+    public Coin getPrice(String ticker) throws HttpRetryException {
+        try {
+            var result = cacheProvider.searchInCache(ticker);
+
+            // If 15s haven't passed since the last cache update, return the value directly
+            if (result.getLastUpdated() + expirationTimeS > System.currentTimeMillis()) {
+                return result;
+            }
+
+            log.info("Cache expired. Updating cache ...");
+        } catch (NoSuchElementException e) {
+            // Will get that exception in case we don't have that value yet in redis
+
+            // If the cache was populated once, but the coin isn't there
+            // then it is not one of the top 200 crypto we are providing
+            if (cacheProvider.isCachePopulated()) {
+                throw new IllegalSelectorException();
+            }
+
+            log.info("Data for {} was request but it wasn't in the cache. Updating cache ...",
+                    ticker);
+        }
+
         var availableCoins = getLastPrices();
 
-        Coin lastTickerPrice = availableCoins.get(ticker);
+        // Resetting the cache
+        cacheProvider.updateCache(availableCoins.values());
 
-        if (lastTickerPrice == null) {
+        Coin requestedCoin = availableCoins.get(ticker);
+
+        if (requestedCoin == null) {
             throw new IllegalSelectorException();
         }
 
-        return lastTickerPrice.getPrice();
+        return requestedCoin;
     }
 
     public Map<String, Coin> getLastPrices() throws HttpRetryException {
@@ -111,7 +143,8 @@ public class CoinMarketCapClient implements CryptoPriceProvider {
 
             coins.put(symbol,
                     new Coin(symbol, Double.parseDouble(
-                            ticker.get("quote").get("USD").get("price").toString())));
+                            ticker.get("quote").get("USD").get("price").toString()),
+                            System.currentTimeMillis()));
         }
 
         return coins;
