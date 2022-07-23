@@ -30,11 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class CoinMarketCapClient implements CryptoPriceProvider {
 
-    @Value("${cmc.apikey:}")
-    // Usually would come as an env var / docker secret
-    // but this one is safe to leave for debugging and testing
-    // purposes, since its a free tier one and request capped
-    private final String apiKey = "d737821b-4627-4992-80e7-31094c4d7b95";
+    @Value("${cmc.apikey:test}")
+    private String apiKey;
 
     @Override
     public Double getPrice(String ticker) throws HttpRetryException {
