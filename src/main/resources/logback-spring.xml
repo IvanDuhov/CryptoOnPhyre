@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
+    <!--
+    TODO:
+      1. fix the error logging
+      2. add logging from the new v2 premium endpoint
+    -->
+
     <property name="LOG_PATTERN" value="%black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable" />
     <property name="LOGS" value="./logs" />
 

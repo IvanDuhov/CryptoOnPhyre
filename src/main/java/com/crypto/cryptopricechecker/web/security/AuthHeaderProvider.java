@@ -25,6 +25,7 @@ public class AuthHeaderProvider extends PreAuthenticatedAuthenticationProvider {
             return null;
         }
 
+        // Probably no the most clean way to do it, research if it can be done better
         var user = (User) authentication.getPrincipal();
         var request = (UserRequest) authentication.getCredentials();
 
