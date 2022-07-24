@@ -1,0 +1,40 @@
+version: '2'
+
+services:
+  app:
+    image: 'cyrptoapi:latest'
+    build:
+      context: ../
+    container_name: app
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      # Postgre config
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/compose-postgres
+      - SPRING_DATASOURCE_USERNAME=compose-postgres
+      - SPRING_DATASOURCE_PASSWORD=compose-postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQL81Dialect
+      # Redis config
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
+      - REDIS_EXPIRATION=60
+      - CMC_APIKEY=d737821b-4627-4992-80e7-31094c4d7b95
+
+  db:
+    image: 'postgres:13.1-alpine'
+    container_name: db
+    environment:
+      - POSTGRES_USER=compose-postgres
+      - POSTGRES_PASSWORD=compose-postgres
+
+
+  redis:
+    image: 'redis:6.2-alpine'
+    container_name: redis
+    command: redis-server --loglevel warning
+    volumes:
+      - cache/data
