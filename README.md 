@@ -1,0 +1,10 @@
+How to use:
+1. First, you need to create an account
+    - hit the `/v1/account/register` endpoint
+      Example: `curl -v -X POST localhost:8080 -H "Content-Type: application/json" -d '{"username":"test", "password":"123"}'`
+    - the curl will return the api token
+2. By using the API token hit `/v1/price/BNB`
+   Example: curl -v http://localhost:8080/v1/price/BNB -H "AUTH-TOKEN:9129f358-089d-49ff-b937-e0a8024023f9"
+
+
+TBD: better descriptions of the endpoints and how to use them
