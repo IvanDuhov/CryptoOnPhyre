@@ -14,4 +14,6 @@ public class StringValidator {
         return matcher.matches();
     }
 
+    // TODO: add regex for password and username validations
+
 }

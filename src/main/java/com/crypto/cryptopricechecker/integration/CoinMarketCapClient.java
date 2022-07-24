@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.nio.channels.IllegalSelectorException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -40,6 +41,13 @@ public class CoinMarketCapClient implements CryptoPriceProvider {
     @Autowired
     private CacheProvider cacheProvider;
 
+    /**
+     * Implemented because of the {@link CryptoPriceProvider} interface. Makes the call
+     * to the API provider, also invokes caching.
+     * @param ticker - the cyrpto ticker we want info about
+     * @return - the particular crytpo we asked about
+     * @throws HttpRetryException
+     */
     @Override
     public Coin getPrice(String ticker) throws HttpRetryException {
         try {
@@ -78,6 +86,11 @@ public class CoinMarketCapClient implements CryptoPriceProvider {
         return requestedCoin;
     }
 
+    /**
+     * Makes the call to the API and processes the response
+     * @return - Map with the cyrptos we asked about
+     * @throws HttpRetryException - something wrong with the API provider
+     */
     public Map<String, Coin> getLastPrices() throws HttpRetryException {
         String uri = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
         List<NameValuePair> paratmers = new ArrayList<NameValuePair>();
@@ -102,23 +115,32 @@ public class CoinMarketCapClient implements CryptoPriceProvider {
         return null;
     }
 
+    /**
+     * Makes the actual call to the coin market cap API
+     * @param uri - the ednpoint we want to hit
+     * @param parameters - custom parameters of the call - refer to https://coinmarketcap.com/api/documentation/v1/
+     * @return - Raw string with the response from the API
+     * @throws URISyntaxException
+     * @throws IOException
+     */
     private String makeAPICall(String uri, List<NameValuePair> parameters)
             throws URISyntaxException, IOException {
         String response_content = "";
 
+        // Build the call to the third party provider
         URIBuilder query = new URIBuilder(uri);
         query.addParameters(parameters);
 
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet request = new HttpGet(query.build());
 
+        // Add the api token
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
         request.addHeader("X-CMC_PRO_API_KEY", apiKey);
 
         try (CloseableHttpResponse response = client.execute(request)) {
-            System.out.println(response.getStatusLine());
 
-            // Maybe add enhanced exception handling fore support of more status codes
+            // Maybe add enhanced exception handling for support of more status codes
             if (response.getStatusLine().getStatusCode() != 200) {
                 log.error(
                         "The call to the third party provider wasn't successful, please try again");
@@ -135,16 +157,22 @@ public class CoinMarketCapClient implements CryptoPriceProvider {
         return response_content;
     }
 
+    /**
+     * Parses the data we got from the third party api to our model
+     * @param rawObject - the raw response from the third party API
+     * @return - Dictionary of all the cryptos we requested
+     */
     private Map<String, Coin> getCoinsFromResponse(JsonNode rawObject) {
         Map<String, Coin> coins = new HashMap<>();
 
         for (var ticker : rawObject.get("data")) {
             String symbol = ticker.get("symbol").toString().replace("\"", "");
 
-            coins.put(symbol,
-                    new Coin(symbol, Double.parseDouble(
-                            ticker.get("quote").get("USD").get("price").toString()),
-                            System.currentTimeMillis()));
+            var price = new Hashtable<String, Double>();
+            price.put("USD", Double.parseDouble(
+                    ticker.get("quote").get("USD").get("price").toString()));
+
+            coins.put(symbol, new Coin(symbol, price, System.currentTimeMillis()));
         }
 
         return coins;

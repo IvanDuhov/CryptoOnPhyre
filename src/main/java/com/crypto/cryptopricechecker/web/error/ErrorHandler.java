@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 public class ErrorHandler {
 
+    // TODO: also might want to declare some custom exceptions
+
     /**
      * Handles IllegalArgumentException.
      *

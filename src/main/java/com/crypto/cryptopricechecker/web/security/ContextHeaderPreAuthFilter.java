@@ -19,6 +19,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.web.filter.OncePerRequestFilter;
 
 
+// TODO: Research AbstractPreAuthenticatedProcessingFilter
+
 /**
  * A pre-authenticated filter that expects authentication header from
  * the client.
