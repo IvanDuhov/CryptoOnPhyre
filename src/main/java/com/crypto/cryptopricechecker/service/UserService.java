@@ -2,6 +2,7 @@ package com.crypto.cryptopricechecker.service;
 
 import com.crypto.cryptopricechecker.persistence.model.User;
 import com.crypto.cryptopricechecker.persistence.repository.UserRepository;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,8 @@ public class UserService {
 
         String hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray());
 
-        var saved = new User(username, hashedPassword, java.util.UUID.randomUUID().toString());
+        var saved =
+                new User(username, hashedPassword, java.util.UUID.randomUUID().toString(), false);
 
         userRepository.save(saved);
 
@@ -31,7 +33,8 @@ public class UserService {
             throw new IllegalCallerException("Such user doesn't exist!");
         }
 
-        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.get().getPassword());
+        BCrypt.Result result =
+                BCrypt.verifyer().verify(password.toCharArray(), user.get().getPassword());
 
         if (result.verified) {
             return user.get().getAuthToken();
@@ -40,4 +43,13 @@ public class UserService {
         throw new IllegalCallerException("Sorry, wrong password!");
     }
 
+    public Optional<User> findByAuthToken(String authToken) {
+        var user = userRepository.findByAuthToken(authToken);
+
+        if (user == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(user);
+    }
 }
